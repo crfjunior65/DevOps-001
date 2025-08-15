@@ -1,0 +1,9 @@
+---
+all:
+  hosts:
+  vars:
+
+  children:
+    managed_nodes:
+      hoosts:
+      vars:
