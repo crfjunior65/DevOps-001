@@ -1,0 +1,6 @@
+ecr_repository_arn = "arn:aws:ecr:us-east-1:487985088503:repository/bia"
+ecr_repository_id = "bia"
+ecr_repository_name = "bia"
+ecr_repository_registry_id = "487985088503"
+ecr_repository_tags_all = tomap({})
+ecr_repository_url = "487985088503.dkr.ecr.us-east-1.amazonaws.com/bia"

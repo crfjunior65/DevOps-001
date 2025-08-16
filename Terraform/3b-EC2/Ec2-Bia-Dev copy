@@ -1,0 +1,297 @@
+resource "aws_instance" "ec2_bia_dev" {
+
+  depends_on = [aws_key_pair.deployer]
+
+  #count = 1
+  #ami   = var.amis["Ubnt-us-east-1"]
+  #ami           = data.aws_ami.ubuntu_linux.id
+  #data.terraform_remote_state.remote-state-information.outputs.autor
+  ami = data.aws_ami.amazon_linux.id
+  #data.terraform_remote_state.vpc.outputs.ami_amazon_linux.id
+  instance_type = "t3.micro"
+
+  key_name = var.key_name
+
+  #Selecionar VPC
+  #vpc_id      = module.vpc.vpc_id
+
+  #Selecionar SubRede
+  #subnet_id = module.vpc.vpc_id.public_subnets[0]
+  subnet_id = data.terraform_remote_state.vpc.outputs.vpc_public_subnets_id[0]
+  # module.vpc.public_subnets[0]
+
+  #Atribuir IP Publico
+  associate_public_ip_address = true
+
+  #iam_instance_profile        = data.terraform_remote_state.vpc.outputs.iam_ssm_profile
+  #aws_iam_instance_profile.ecs_node.id
+
+  #Definir Volume
+
+  user_data = file("InstallBia.sh")
+
+  #user_data = << EOF
+  #              #! /bin/bash
+  #              cd /home/ubuntu
+  #              apt update -y
+  #              apt upgrade -y
+  #              apt install wget unzip -y
+  #              TER_VER=$(curl -s https://api.github.com/repos/hashicorp/terraform/releases/latest | grep tag_name | cut -d: -f2 | tr -d \"\,\v | awk '{$1=$1};1')
+  #              wget https://releases.hashicorp.com/terraform/${TER_VER}/terraform_${TER_VER}_linux_amd64.zip
+  #              unzip terraform_${TER_VER}_linux_amd64.zip
+  #              mv terraform /usr/local/bin/
+  #              EOF
+
+  # Associar o Role SSM à instância EC2
+  iam_instance_profile = data.terraform_remote_state.iam.outputs.iam_ssm_profile.id
+  #aws_iam_instance_profile.ssm_profile.name
+
+  ###
+  /*
+  provisioner "remote-exec" {
+    inline = [
+      # Mounting Efs
+      #"sudo mount -t nfs -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport ${aws_efs_file_system.efs.dns_name}:/  /var/www/html",
+      "sudo mount -t nfs -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport ${data.terraform_remote_state.EFS.efs_fs_dns}:/  /home/ec2-user/GLPI",
+      "sleep 15",
+      "sudo chmod go+rw /home/ec2-user/GLPI",
+      "sudo bash -c 'echo Welcome  > /home/ec2-user/GLPI/index.html'",
+    ]
+  }
+*/
+  ###
+
+  tags = {
+    Name        = "Bia DEV"
+    Terraform   = "true"
+    Environment = "Projeto"
+    Management  = "Terraform"
+    #Id_EFS      = data.terraform_remote_state.efs.outputs.efs_fs_id
+  }
+  /*
+  vpc_security_group_ids = ["${data.terraform_remote_state.sg.outputs.sg_ssh_id}",
+    "${data.terraform_remote_state.sg.outputs.sg_http_id}",
+    "${data.terraform_remote_state.sg.outputs.sg_rds_id}",
+  "${data.terraform_remote_state.sg.outputs.sg_efs_id}"]
+  */
+  vpc_security_group_ids = ["${data.terraform_remote_state.sg.outputs.sg_bia_dev}"]
+
+  provisioner "remote-exec" {
+    #depends_on =
+    connection {
+      type        = "ssh"
+      user        = "ec2-user"
+      private_key = file("aws-key-terraform")
+      host        = self.public_ip
+      timeout     = "55s"
+    }
+
+    inline = [
+      # Instalar o cliente NFS
+      #"sudo yum update -y",
+      #"sudo yum upgrade -y"
+      "cd /home/ec2-user/bia",
+      "ls -lha",
+      "pwd",
+      <<-EOT
+      echo 'services:
+  server:
+    build: .
+    container_name: bia
+    ports:
+      - 3001:8080
+    links:
+      - database
+    environment:
+      DB_USER: postgres
+      DB_PWD: postgres
+      DB_HOST: ${data.terraform_remote_state.rds.outputs.db_db_address}
+      DB_PORT: 5432
+      ## NAO PRECISA NO BOOTCAMP DAQUI PRA BAIXO ##
+      # DB_SECRET_NAME:
+      # DB_REGION:
+      # AWS_ACCESS_KEY_ID:
+      # AWS_SECRET_ACCESS_KEY:
+      # DEBUG_SECRET:
+      # IS_LOCAL: true
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://localhost:8080/api/versao"]
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 3
+    #   start_period: 5s
+  database:
+    image: postgres:16.1
+    container_name: database
+    environment:
+      - "POSTGRES_USER=postgres"
+      - "POSTGRES_PASSWORD=postgres"
+      - "POSTGRES_DB=bia"
+    ports:
+      - 5433:5432
+    volumes:
+      - db:/var/lib/postgresql/data
+volumes:
+  db:' > docker-compose.yml
+  EOT
+      ,
+      "docker compose -d up",
+      "docker compose exec server bash -c 'npx sequelize db:migrate'"
+
+
+      #"cp scripts/ecs/unix/*.sh .",
+      #"chmod +x *.sh"
+      #  vi Dockerfile
+      #6  vi docker-compose.yml
+      #7  docker compose up -d
+      #8  cat README.md
+      #9  docker compose exec server bash -c 'npx sequelize db:migrate'
+
+    ]
+  }
+  #"${aws_security_group.acesso-http.id}", "${aws_security_group.acesso-rds.id}"]
+  /*
+
+provisioner "file" {
+    source      = "meu-arquivo.txt"  # Caminho do arquivo local
+    destination = "/home/ec2-user/meu-arquivo.txt"  # Destino na EC2
+
+    connection {
+      type        = "ssh"
+      user        = "ec2-user"
+      private_key = file("aws-key-terraform")
+      host        = self.public_ip
+      timeout     = "55s"
+    }
+  }
+
+
+
+  provisioner "remote-exec" {
+    #depends_on =
+    connection {
+      type        = "ssh"
+      user        = "ec2-user"
+      private_key = file("aws-key-terraform")
+      host        = self.public_ip
+      timeout     = "35s"
+    }
+
+    inline = [
+      # Instalar o cliente NFS
+      "sudo yum update -y",
+      "sudo yum upgrade -y" #,
+
+    ]
+  }
+*/
+}
+
+
+/*
+Acoes Banco de Dados
+====================
+1  docker-compose up -d
+
+   1  cd bia/
+    2  cp scripts/ecs/unix/*.sh .
+    3  chmod +x *.sh
+    4  ls -lha
+    5  vi Dockerfile
+    6  vi docker-compose.yml
+    7  docker compose up -d
+    8  cat README.md
+    9  docker compose exec server bash -c 'npx sequelize db:migrate'
+   10  history
+
+
+
+ 4  cd bia
+    5  ls -lha
+    6  cat rodar_app_local_unix.sh
+    7  docker compose up -d
+    8  docker-compose up -d
+    9  vi Dockerfile
+   10  docker-compose down
+   11  docker-compose build server
+   12  docker-compose up -d
+   13  docker-compose down -v
+   14  cat README.md
+   15  docker-compose up -d
+   16  docker compose exec server bash -c 'npx sequelize db:migrate'
+   17  docker-compose exec server bash -c 'npx sequelize db:migrate'
+   18  docker-compose exec server bash -c 'npx sequelize db:create'
+   19  docker-compose up -d
+   20  docker-compose exec server bash -c 'npx sequelize db:create'
+   21  docker-compose exec server bash -c 'npx sequelize db:migrate'
+   22  pwd
+   23  docker container ls
+   24  docker-compose down
+   25  vi Dockerfile
+   26  docker-compose up -d
+   27  vi Dockerfile
+   28  docker-compose build server
+   29  docker-compose up -d
+   30  history
+
+   /home/junior/Dados/FormacaoAWS/Terraform/3a-Orquestrador
+╷
+│ Error: Reference to undeclared resource
+│
+│   on Ec2.tf line 77, in resource "aws_instance" "ec2_bia_dev":
+│   77:   vpc_security_group_ids = ["${aws_security_group.sg_bia_dev.id}"]
+│
+│ A managed resource "aws_security_group" "sg_bia_dev" has not been declared in the root module.
+╵
+╷
+│ Error: Reference to undeclared resource
+│
+│   on Ec2.tf line 77, in resource "aws_instance" "ec2_bia_dev":
+│   77:   vpc_security_group_ids = ["${aws_security_group.sg_bia_dev.id}"]
+│
+│ A managed resource "aws_security_group" "sg_bia_dev" has not been declared in the root module.
+╵
+./UP.sh: linha 91: cd: 5-ECR: Arquivo ou diretório inexistente
+/home/junior/Dados/FormacaoAWS/Terraform/3a-Orquestrador
+╷
+│ Error: Reference to undeclared resource
+│
+│   on Ec2.tf line 77, in resource "aws_instance" "ec2_bia_dev":
+│   77:   vpc_security_group_ids = ["${aws_security_group.sg_bia_dev.id}"]
+│
+│ A managed resource "aws_security_group" "sg_bia_dev" has not been declared in the root module.
+╵
+╷
+│ Error: Reference to undeclared resource
+│
+│   on Ec2.tf line 77, in resource "aws_instance" "ec2_bia_dev":
+│   77:   vpc_security_group_ids = ["${aws_security_group.sg_bia_dev.id}"]
+│
+│ A managed resource "aws_security_group" "sg_bia_dev" has not been declared in the root module.
+╵
+
+*/
+
+/*
+      # Configurar RDS Banco Zabbix
+      "sudo mysql -hvar.zabbix_db_server -uvar.zabbix_db_user -pvar.zabbix_db_pass -e 'create user "var.zabbix_db_user"@"var.zabbix_db_server" identified by "var.zabbix_db_pass""",
+      "sudo mysql -hvar.zabbix_db_server -uvar.zabbix_db_user -pvar.zabbix_db_pass -e 'grant all privileges on var.zabbix_db_user.* to "var.zabbix_db_name}"@"var.zabbix_db_server}"'",
+      "sudo mysql -hvar.zabbix_db_server -uvar.zabbix_db_user -pvar.zabbix_db_pass -e 'set global log_bin_trust_function_creators = 1",
+*/
+
+
+/*
+
+      # Criar diretório para montagem
+      "sudo mkdir -p /mnt/efs",
+      "sleep 120",
+
+      # Montar o EFS
+      "sudo mount -t efs ${data.terraform_remote_state.efs.outputs.efs_fs_id}:/ /home/ec2-user/Data",
+      "sudo chmod go+rw /home/ec2-user/Data",
+      "sudo bash -c 'echo Welcome  > /home/ec2-user/Data/index.html'",
+      "sudo chown -R ec2-user:ec2-user /home/ec2-user/",
+
+      # Persistir a montagem (opcional)
+      "sudo bash -c echo '${data.terraform_remote_state.efs.outputs.efs_fs_id}:/ /home/ec2-user/Data efs defaults,_netdev 0 0' | sudo tee -a /etc/fstab"
+      */

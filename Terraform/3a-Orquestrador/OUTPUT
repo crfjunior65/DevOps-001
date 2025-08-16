@@ -1,0 +1,15 @@
+EC2_bia_dev_sg_ids = tolist([
+  "sg-094612d9769369a2e",
+])
+ami_amazon2 = "ami-097947612b141c026"
+ami_amazon_2023 = "ami-0f88e80871fd81e91"
+ami_linux_amz_2023 = "ami-0f88e80871fd81e91"
+ami_ubuntu = "ami-05c17b22914ce7378"
+ami_ubuntu_2204 = "ami-02029c87fa31fb148"
+ami_win2022 = "ami-0c798d4b81e585f36"
+autor = "Junior Fernandes"
+cliente = "BIA"
+key_name = "aws-key-terraform"
+projeto = "Formacao AWS"
+regiao = "us-east-1"
+shortnameid = "bia"

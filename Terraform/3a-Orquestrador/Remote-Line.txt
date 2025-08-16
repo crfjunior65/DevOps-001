@@ -1,0 +1,63 @@
+ provisioner "remote-exec" {
+    #depends_on =
+    connection {
+      type        = "ssh"
+      user        = "ec2-user"
+      private_key = file("~/.ssh/aws-key-terraform")
+      host        = self.public_ip
+      timeout     = "55s"
+    }
+
+    inline = [
+      # Instalar o cliente NFS
+      #"sudo yum update -y",
+      #"sudo yum upgrade -y"
+      "cd /home/ec2-user/bia",
+      "ls -lha",
+      "pwd",
+      <<-EOT
+      echo 'services:
+  server:
+    build: .
+    container_name: bia
+    ports:
+      - 3001:8080
+    links:
+      - database
+    environment:
+      DB_USER: postgres
+      DB_PWD: postgres
+      DB_HOST: ${data.terraform_remote_state.rds.outputs.db_db_address}
+      DB_PORT: 5432
+      ## NAO PRECISA NO BOOTCAMP DAQUI PRA BAIXO ##
+      # DB_SECRET_NAME:
+      # DB_REGION:
+      # AWS_ACCESS_KEY_ID:
+      # AWS_SECRET_ACCESS_KEY:
+      # DEBUG_SECRET:
+      # IS_LOCAL: true
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://localhost:8080/api/versao"]
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 3
+    #   start_period: 5s
+  database:
+    image: postgres:16.1
+    container_name: database
+    environment:
+      - "POSTGRES_USER=postgres"
+      - "POSTGRES_PASSWORD=postgres"
+      - "POSTGRES_DB=bia"
+    ports:
+      - 5433:5432
+    volumes:
+      - db:/var/lib/postgresql/data
+volumes:
+  db:' > docker-compose.yml
+  EOT
+      ,
+      "docker compose -d up",
+      "docker compose exec server bash -c 'npx sequelize db:migrate'"
+    ]
+  }

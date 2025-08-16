@@ -1,0 +1,28 @@
+vpc_azs_id = tolist([
+  "us-east-1a",
+  "us-east-1b",
+])
+vpc_database_subnet_arns = [
+  "arn:aws:ec2:us-east-1:487985088503:subnet/subnet-0082b298afc5194e0",
+  "arn:aws:ec2:us-east-1:487985088503:subnet/subnet-075af5910388e485b",
+]
+vpc_db_subnet_grp_name = "formacao_aws-vpc"
+vpc_name = "Formacao_AWS-vpc"
+vpc_private_subnets_cidr_blocks = tolist([
+  "10.12.201.0/24",
+  "10.12.202.0/24",
+])
+vpc_private_subnets_id = [
+  "subnet-0cde97e70e12639c3",
+  "subnet-0be6b8fd703bdab1c",
+]
+vpc_public_subnets_cidr_blocks = tolist([
+  "10.12.101.0/24",
+  "10.12.102.0/24",
+])
+vpc_public_subnets_id = [
+  "subnet-0699409f458e4a19e",
+  "subnet-07e890cc0cac273b6",
+]
+vpc_vpc_cidr_block = "10.12.0.0/16"
+vpc_vpc_id = "vpc-0bdd33f6355d7272a"

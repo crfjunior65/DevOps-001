@@ -1,0 +1,57 @@
+resource "aws_instance" "ec2_orquestrador" {
+  #count = 1
+  #ami   = var.amis["Ubnt-us-east-1"]
+  #ami           = data.aws_ami.ubuntu_linux.id
+  #data.terraform_remote_state.remote-state-information.outputs.autor
+  ami           = data.terraform_remote_state.vpc.outputs.ami_amazon_linux.id
+  instance_type = "t2.micro"
+
+  key_name = var.key_name
+
+  #Selecionar VPC
+  #vpc_id      = module.vpc.vpc_id
+
+  #Selecionar SubRede
+  #subnet_id = module.vpc.vpc_id.public_subnets[0]
+  subnet_id = data.terraform_remote_state.vpc.outputs.vpc_public_subnets_id[0]
+  # module.vpc.public_subnets[0]
+
+  #Atribuir IP Publico
+  associate_public_ip_address = true
+
+  #iam_instance_profile        = data.terraform_remote_state.vpc.outputs.iam_ssm_profile
+  #aws_iam_instance_profile.ecs_node.id
+
+  #Definir Volume
+
+  #####user_data = file("InstallTerrafor.sh")
+
+  #user_data = << EOF
+  #              #! /bin/bash
+  #              cd /home/ubuntu
+  #              apt update -y
+  #              apt upgrade -y
+  #              apt install wget unzip -y
+  #              TER_VER=$(curl -s https://api.github.com/repos/hashicorp/terraform/releases/latest | grep tag_name | cut -d: -f2 | tr -d \"\,\v | awk '{$1=$1};1')
+  #              wget https://releases.hashicorp.com/terraform/${TER_VER}/terraform_${TER_VER}_linux_amd64.zip
+  #              unzip terraform_${TER_VER}_linux_amd64.zip
+  #              mv terraform /usr/local/bin/
+  #              EOF
+
+  # Associar o Role SSM à instância EC2
+  iam_instance_profile = data.terraform_remote_state.vpc.outputs.iam_instance_profile_ssm_profile_name
+  #aws_iam_instance_profile.ssm_profile.name
+
+  tags = {
+    Name        = "Orquestrador"
+    Terraform   = "true"
+    Environment = "Projeto_20"
+    Management  = "Terraform"
+  }
+  vpc_security_group_ids = ["${data.terraform_remote_state.vpc.outputs.sg_ssh_id}",
+  "${data.terraform_remote_state.vpc.outputs.sg_http_id}",
+  "${data.terraform_remote_state.vpc.outputs.sg_rds_id}",
+  "${data.terraform_remote_state.vpc.outputs.sg_efs_id}"]
+  #vpc_security_group_ids = ["${aws_security_group.acesso-ssh.id}",
+  #"${aws_security_group.acesso-http.id}", "${aws_security_group.acesso-rds.id}"]
+}

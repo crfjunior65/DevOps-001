@@ -1,0 +1,138 @@
+# Cria a IAM Role para EC2 com permissão de assumir role
+resource "aws_iam_role" "ec2_ssm_role" {
+  name               = "EC2-SSM-Minimal-Access"
+  description        = "Permite acesso mínimo ao SSM para instâncias EC2"
+  assume_role_policy = jsonencode({
+    Version   = "2012-10-17"
+    Statement = [
+      {
+        Effect    = "Allow"
+        Principal = { Service = "ec2.amazonaws.com" }
+        Action    = "sts:AssumeRole"
+      }
+    ]
+  })
+
+  tags = {
+    Purpose = "SSM Access"
+  }
+}
+
+# Anexa a política gerenciada mínima necessária para SSM
+resource "aws_iam_role_policy_attachment" "ssm_core" {
+  role       = aws_iam_role.ec2_ssm_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+# Cria o Instance Profile para associar à EC2
+resource "aws_iam_instance_profile" "ec2_ssm_profile" {
+  name = "EC2-SSM-Instance-Profile"
+  role = aws_iam_role.ec2_ssm_role.name
+}
+
+# Política customizada adicional para restringir ainda mais o acesso (opcional)
+resource "aws_iam_role_policy" "ssm_minimal_policy" {
+  name   = "SSM-Minimal-Custom-Policy"
+  role   = aws_iam_role.ec2_ssm_role.id
+  policy = jsonencode({
+    Version   = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = [
+          "ssm:DescribeInstanceInformation",
+          "ssm:ListCommands",
+          "ssm:ListCommandInvocations"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+/*
+Componentes:
+
+    aws_iam_role: Define a role com trust policy para EC2
+
+    aws_iam_role_policy_attachment: Anexa a política gerenciada básica do SSM
+
+    aws_iam_instance_profile: Permite associar a role às instâncias EC2
+
+    aws_iam_role_policy (opcional): Política customizada adicional para restringir mais
+
+
+
+
+###########################################
+
+# Cria a IAM Role para EC2
+resource "aws_iam_role" "ec2_unified_role" {
+  name               = "EC2-Unified-Access-Role"
+  description        = "Fornece acesso a SSM, S3 Full, ECR e ECS para instâncias EC2"
+  assume_role_policy = jsonencode({
+    Version   = "2012-10-17"
+    Statement = [
+      {
+        Effect    = "Allow"
+        Principal = { Service = "ec2.amazonaws.com" }
+        Action    = "sts:AssumeRole"
+      }
+    ]
+  })
+
+  tags = {
+    Purpose = "Unified EC2 Access"
+  }
+}
+
+# Anexa as políticas gerenciadas necessárias
+resource "aws_iam_role_policy_attachment" "ssm_core" {
+  role       = aws_iam_role.ec2_unified_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+resource "aws_iam_role_policy_attachment" "s3_full" {
+  role       = aws_iam_role.ec2_unified_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+}
+
+resource "aws_iam_role_policy_attachment" "ecr_full" {
+  role       = aws_iam_role.ec2_unified_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess"
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_full" {
+  role       = aws_iam_role.ec2_unified_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonECS_FullAccess"
+}
+
+# Cria o Instance Profile para associar à EC2
+resource "aws_iam_instance_profile" "ec2_unified_profile" {
+  name = "EC2-Unified-Instance-Profile"
+  role = aws_iam_role.ec2_unified_role.name
+}
+
+# Política customizada adicional para melhor organização (opcional)
+resource "aws_iam_role_policy" "custom_unified_policy" {
+  name   = "Custom-Unified-Policy"
+  role   = aws_iam_role.ec2_unified_role.id
+
+  policy = jsonencode({
+    Version   = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = [
+          "ec2:DescribeInstances",
+          "ec2:DescribeTags"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+
+
+*/

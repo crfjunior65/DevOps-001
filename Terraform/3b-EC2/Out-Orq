@@ -1,0 +1,13 @@
+EC2_Orquestrador_sg_ids = toset([
+  "sg-0155d1f67f2f69c60",
+  "sg-03f22eb3926d238c8",
+  "sg-070c226fa5f4bcce6",
+  "sg-07d4cebb45e717210",
+])
+autor = "Junior Fernandes"
+cliente = "Cloud Treinamento"
+private_ip = "10.20.101.184"
+projeto = "oficina-20"
+public_ip = "44.201.217.21"
+regiao = "us-east-1"
+shortnameid = "GLPI"

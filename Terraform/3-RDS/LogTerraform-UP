@@ -1,0 +1,44 @@
+/home/junior/Dados/AWS-CloudTreinamentos/Projeto23/Terraform/3-RDS
+[0m[1maws_db_instance.db-Projeto: Creating...[0m[0m
+[0m[1maws_db_instance.db-Projeto: Still creating... [10s elapsed][0m[0m
+[0m[1maws_db_instance.db-Projeto: Still creating... [20s elapsed][0m[0m
+[0m[1maws_db_instance.db-Projeto: Still creating... [30s elapsed][0m[0m
+[0m[1maws_db_instance.db-Projeto: Still creating... [40s elapsed][0m[0m
+[0m[1maws_db_instance.db-Projeto: Still creating... [50s elapsed][0m[0m
+[0m[1maws_db_instance.db-Projeto: Still creating... [1m0s elapsed][0m[0m
+[0m[1maws_db_instance.db-Projeto: Still creating... [1m10s elapsed][0m[0m
+[0m[1maws_db_instance.db-Projeto: Still creating... [1m20s elapsed][0m[0m
+[0m[1maws_db_instance.db-Projeto: Still creating... [1m30s elapsed][0m[0m
+[0m[1maws_db_instance.db-Projeto: Still creating... [1m40s elapsed][0m[0m
+[0m[1maws_db_instance.db-Projeto: Still creating... [1m50s elapsed][0m[0m
+[0m[1maws_db_instance.db-Projeto: Still creating... [2m0s elapsed][0m[0m
+[0m[1maws_db_instance.db-Projeto: Still creating... [2m10s elapsed][0m[0m
+[0m[1maws_db_instance.db-Projeto: Still creating... [2m20s elapsed][0m[0m
+[0m[1maws_db_instance.db-Projeto: Still creating... [2m30s elapsed][0m[0m
+[0m[1maws_db_instance.db-Projeto: Still creating... [2m40s elapsed][0m[0m
+[0m[1maws_db_instance.db-Projeto: Still creating... [2m50s elapsed][0m[0m
+[0m[1maws_db_instance.db-Projeto: Still creating... [3m0s elapsed][0m[0m
+[0m[1maws_db_instance.db-Projeto: Still creating... [3m10s elapsed][0m[0m
+[0m[1maws_db_instance.db-Projeto: Still creating... [3m20s elapsed][0m[0m
+[0m[1maws_db_instance.db-Projeto: Still creating... [3m30s elapsed][0m[0m
+[0m[1maws_db_instance.db-Projeto: Still creating... [3m40s elapsed][0m[0m
+[0m[1maws_db_instance.db-Projeto: Still creating... [3m50s elapsed][0m[0m
+[0m[1maws_db_instance.db-Projeto: Still creating... [4m0s elapsed][0m[0m
+[0m[1maws_db_instance.db-Projeto: Still creating... [4m10s elapsed][0m[0m
+[0m[1maws_db_instance.db-Projeto: Still creating... [4m20s elapsed][0m[0m
+[0m[1maws_db_instance.db-Projeto: Still creating... [4m30s elapsed][0m[0m
+[0m[1maws_db_instance.db-Projeto: Creation complete after 4m33s [id=db-GVS5DLS53UD7MYKRWY4G6T4PCY][0m
+[0m[1m[32m
+Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
+[0m[0m[1m[32m
+Outputs:
+
+[0mdb_arn = "arn:aws:rds:us-east-1:724772072639:db:dbzabbix"
+db_db_address = "dbzabbix.cvimy8y2y6zu.us-east-1.rds.amazonaws.com"
+db_db_engine = "mysql"
+db_db_id = "db-GVS5DLS53UD7MYKRWY4G6T4PCY"
+db_db_identifier = "dbzabbix"
+db_db_name = "zabbixdb"
+db_db_port = 3306
+db_db_username = "zabbix"
+db_end_point = "dbzabbix.cvimy8y2y6zu.us-east-1.rds.amazonaws.com:3306"

@@ -1,0 +1,102 @@
+   1  pwd
+    2  mysql --version
+    3  mysq -hdbzabbix.cvimy8y2y6zu.us-east-1.rds.amazonaws.com:3306 -uroot
+    4  mysql -hdbzabbix.cvimy8y2y6zu.us-east-1.rds.amazonaws.com:3306 -uroot
+    5  ping dbzabbix.cvimy8y2y6zu.us-east-1.rds.amazonaws.com
+    6  mysql -hdbzabbix.cvimy8y2y6zu.us-east-1.rds.amazonaws.com:3306 -uzabbix -pzabbix123456
+    7  mysql -hdbzabbix.cvimy8y2y6zu.us-east-1.rds.amazonaws.com -uzabbix -pzabbix123456
+    8  mysql -hdbzabbix.cvimy8y2y6zu.us-east-1.rds.amazonaws.com -uzabbix -pzabbix123456 -e "create database ${ZABBIX_DB_NAME} character set utf8mb4 collate utf8mb4_bin"
+    9  mysql -hdbzabbix.cvimy8y2y6zu.us-east-1.rds.amazonaws.com -uzabbix -pzabbix123456 -e "create database ${ZABBIX_DB_NAME} character set utf8mb4 collate utf8mb4_bin;"
+   10  mysql -hdbzabbix.cvimy8y2y6zu.us-east-1.rds.amazonaws.com -uzabbix -pzabbix123456 -e "create database zabbixdb character set utf8mb4 collate utf8mb4_bin"
+   11  mysql -hdbzabbix.cvimy8y2y6zu.us-east-1.rds.amazonaws.com -uzabbix -pzabbix123456 -e
+   12  ZABBIX_DB_SERVER="dbzabbix.cvimy8y2y6zu.us-east-1.rds.amazonaws.com"
+   13  echo $ZABBIX_DB_SERVER
+   14  ZABBIX_DB_USER="zabbix"
+   15  ZABBIX_DB_PASS="zabbix123456"
+   16  ZABBIX_DB_NAME="zabbixdb"
+   17  mysql -h${ZABBIX_DB_SERVER} -u${ZABBIX_DB_USER} -p${ZABBIX_DB_PASS} -e "create user '${ZABBIX_DB_USER}'@'${ZABBIX_DB_SERVER}' identified by '${ZABBIX_DB_PASS}'"
+   18  mysql -h${ZABBIX_DB_SERVER} -u${ZABBIX_DB_USER} -p${ZABBIX_DB_PASS} -e "grant all privileges on ${ZABBIX_DB_USER}.* to '${ZABBIX_DB_NAME}'@'${ZABBIX_DB_SERVER}'"
+   19  mysql -h${ZABBIX_DB_SERVER} -u${ZABBIX_DB_USER} -p${ZABBIX_DB_PASS} -e "set global log_bin_trust_function_creators = 1"
+   20  history
+
+ZABBIX_DB_SERVER="dbzabbix.cvimy8y2y6zu.us-east-1.rds.amazonaws.com"
+echo $ZABBIX_DB_SERVER
+ZABBIX_DB_USER="zabbix"
+ZABBIX_DB_PASS="zabbix123456"
+ZABBIX_DB_NAME="zabbix"
+mysql -h${ZABBIX_DB_SERVER} -u${ZABBIX_DB_USER} -p${ZABBIX_DB_PASS} -e "create user '${ZABBIX_DB_USER}'@'${ZABBIX_DB_SERVER}' identified by '${ZABBIX_DB_PASS}'"
+mysql -h${ZABBIX_DB_SERVER} -u${ZABBIX_DB_USER} -p${ZABBIX_DB_PASS} -e "grant all privileges on ${ZABBIX_DB_USER}.* to '${ZABBIX_DB_NAME}'@'${ZABBIX_DB_SERVER}'"
+mysql -h${ZABBIX_DB_SERVER} -u${ZABBIX_DB_USER} -p${ZABBIX_DB_PASS} -e "set global log_bin_trust_function_creators = 1"
+
+
+    Create and configure a database and a user.
+
+mysql -uroot -p<password>
+mysql> create database zabbix character set utf8mb4 collate utf8mb4_bin;
+mysql> create user 'zabbix'@'localhost' identified by '<password>';
+mysql> grant all privileges on zabbix.* to 'zabbix'@'localhost';
+mysql> SET GLOBAL log_bin_trust_function_creators = 1; mysql> quit;
+
+    Import the data into the database and set utf8mb4 character set as default. For a Zabbix proxy database, only schema.sql should be imported (no images.sql nor data.sql).
+
+cd database/mysql
+mysql -uzabbix -p<password> zabbix < schema.sql
+# stop here if you are creating database for Zabbix proxy mysql -uzabbix -p<password> zabbix < images.sql mysql -uzabbix -p<password> --default-character-set=utf8mb4 zabbix < data.sql
+
+log_bin_trust_function_creators can be disabled after the schema has been successfully imported:
+
+mysql -uroot -p<password>
+mysql> SET GLOBAL log_bin_trust_function_creators = 0;
+mysql> quit;
+
+
+
+###########################################
+Zabbix Install
+# yum install zabbix-server-mysql zabbix-web-mysql Não funcionou
+Amazon Linux
+rpm -Uvh https://repo.zabbix.com/zabbix/7.2/release/amazonlinux/2023/noarch/zabbix-release-latest-7.2.amzn2023.noarch.rpm
+ou
+rpm -Uvh https://repo.zabbix.com/zabbix/7.0/amazonlinux/2023/x86_64/zabbix-release-latest-7.0.amzn2023.noarch.rpm
+
+dnf clean all
+dnf install zabbix-server-mysql zabbix-web-mysql zabbix-nginx-conf zabbix-sql-scripts zabbix-agent
+
+# mysql -uroot -p
+password
+mysql> create database zabbix character set utf8mb4 collate utf8mb4_bin;
+mysql> create user zabbix@localhost identified by 'password';
+mysql> grant all privileges on zabbix.* to zabbix@localhost;
+mysql> set global log_bin_trust_function_creators = 1;
+mysql> quit;
+
+# zcat /usr/share/zabbix/sql-scripts/mysql/server.sql.gz | mysql --default-character-set=utf8mb4 -uzabbix -p zabbix
+
+
+###############
+
+Zaabix MySQL
+# mysql -uroot -p
+password
+mysql> create database zabbix character set utf8mb4 collate utf8mb4_bin;
+mysql> create user zabbix@localhost identified by 'password';
+mysql> grant all privileges on zabbix.* to zabbix@localhost;
+mysql> set global log_bin_trust_function_creators = 1;
+mysql> quit;
+
+Docker EC2
+ZABBIX_DB_SERVER="zabbix.cvimy8y2y6zu.us-east-1.rds.amazonaws.com"
+ZABBIX_DB_USER="zabbix"
+ZABBIX_DB_PASS="zabbix123456"
+ZABBIX_DB_NAME="zabbix"
+mysql -h${ZABBIX_DB_SERVER} -u${ZABBIX_DB_USER} -p${ZABBIX_DB_PASS} -e "create user '${ZABBIX_DB_USER}'@'${ZABBIX_DB_SERVER}' identified by '${ZABBIX_DB_PASS}'"
+mysql -h${ZABBIX_DB_SERVER} -u${ZABBIX_DB_USER} -p${ZABBIX_DB_PASS} -e "grant all privileges on ${ZABBIX_DB_USER}.* to '${ZABBIX_DB_NAME}'@'${ZABBIX_DB_SERVER}'"
+mysql -h${ZABBIX_DB_SERVER} -u${ZABBIX_DB_USER} -p${ZABBIX_DB_PASS} -e "set global log_bin_trust_function_creators = 1"
+
+docker run --name some-zabbix-server-mysql -e DB_SERVER_HOST="$ZABBIX_DB_SERVER" -e MYSQL_USER="$ZABBIX_DB_USER" -e MYSQL_PASSWORD="$ZABBIX_DB_PASS" --init -d zabbix/zabbix-server-mysql
+docker exec -it some-zabbix-server-mysql  /bin/bash
+docker logs some-zabbix-server-mysql
+
+
+ On Zabbix server host import initial schema and data. You will be prompted to enter your newly created password.
+# zcat /usr/share/zabbix/sql-scripts/mysql/server.sql.gz | mysql --default-character-set=utf8mb4 -uzabbix -p zabbix
