@@ -1,0 +1,87 @@
+# Configurações básicas do cluster
+cluster_name       = "bia-eks-cluster"
+kubernetes_version = "1.28"
+AWS_REGION        = "us-east-2"
+
+# Configurações de acesso
+endpoint_private_access = true
+endpoint_public_access  = true
+public_access_cidrs    = ["0.0.0.0/0"]  # Restringir em produção
+
+# Node Groups
+node_groups = {
+  general = {
+    instance_types             = ["t3.medium"]
+    ami_type                   = "AL2_x86_64"
+    capacity_type              = "ON_DEMAND"
+    disk_size                  = 20
+    desired_size               = 2
+    max_size                   = 4
+    min_size                   = 1
+    max_unavailable_percentage = 25
+    launch_template            = null
+    remote_access              = null
+    taints                     = null
+    tags = {
+      Environment = "dev"
+      NodeGroup   = "general"
+    }
+  }
+  
+  # Exemplo de node group adicional para workloads específicos
+  # compute = {
+  #   instance_types             = ["c5.large"]
+  #   ami_type                   = "AL2_x86_64"
+  #   capacity_type              = "SPOT"
+  #   disk_size                  = 30
+  #   desired_size               = 1
+  #   max_size                   = 3
+  #   min_size                   = 0
+  #   max_unavailable_percentage = 50
+  #   launch_template            = null
+  #   remote_access              = null
+  #   taints = [
+  #     {
+  #       key    = "compute-optimized"
+  #       value  = "true"
+  #       effect = "NO_SCHEDULE"
+  #     }
+  #   ]
+  #   tags = {
+  #     Environment = "dev"
+  #     NodeGroup   = "compute"
+  #     Workload    = "compute-intensive"
+  #   }
+  # }
+}
+
+# Addons do cluster
+cluster_addons = {
+  "vpc-cni" = {
+    version           = "v1.15.1-eksbuild.1"
+    resolve_conflicts = "OVERWRITE"
+  }
+  "coredns" = {
+    version           = "v1.10.1-eksbuild.5"
+    resolve_conflicts = "OVERWRITE"
+  }
+  "kube-proxy" = {
+    version           = "v1.28.2-eksbuild.2"
+    resolve_conflicts = "OVERWRITE"
+  }
+  "aws-ebs-csi-driver" = {
+    version           = "v1.24.0-eksbuild.1"
+    resolve_conflicts = "OVERWRITE"
+  }
+}
+
+# Configurações de Security Groups
+create_alb_security_group = true
+
+# Tags comuns
+common_tags = {
+  Environment = "dev"
+  Project     = "DevOps-001"
+  ManagedBy   = "Terraform"
+  Owner       = "Junior"
+}
